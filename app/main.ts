@@ -28,7 +28,7 @@ async function main() {
       }
       
       if (!shell_builtin.includes(cmd[1])) {
-        rl.write(`${cmd[1]}: command not found\n`);
+        rl.write(`${cmd[1]}: not found\n`);
         continue;
       }
 
