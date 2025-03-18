@@ -23,6 +23,12 @@ async function main() {
       }
     }
 
+    if (cmd[0] === 'echo') {
+      cmd.slice(1).forEach(e => rl.write(`${e} `));
+      rl.write('\n');
+      continue;
+    }
+
     rl.write(`${answer}: command not found\n`);
   }
 }
