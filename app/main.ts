@@ -1,6 +1,7 @@
 import assert from "assert";
 import { exit } from "process";
 import { createInterface } from "readline/promises";
+import { Command } from "./Command";
 
 const shell_builtin = ['echo', 'exit', 'type'];
 const rl = createInterface({
@@ -12,36 +13,40 @@ async function main() {
 
   while (true) {
     const answer = await rl.question('$ ');
-    const cmd = answer.trim().split(/\s+/);
+    const cmd = new Command(answer);
     
-    if (cmd.length === 0) {
+    if (cmd.name.length === 0) {
       assert(false, "Must provide at least one command");
     }
 
-    if (!shell_builtin.includes(cmd[0])) {
+    if (!shell_builtin.includes(cmd.name)) {
       rl.write(`${answer}: command not found\n`);
       continue;
     }
-    else if (cmd[0] === 'type') {
-      if (cmd.length < 2) {
+    else if (cmd.name === 'type') {
+      if (cmd.name.length < 2) {
         assert(false, 'Not implemented yet');
       }
+
+      const { value } = cmd[Symbol.iterator]().next();
       
-      if (!shell_builtin.includes(cmd[1])) {
-        rl.write(`${cmd[1]}: not found\n`);
+      if (!shell_builtin.includes(value)) {
+        rl.write(`${value}: not found\n`);
         continue;
       }
 
-      rl.write(`${cmd[1]} is a shell builtin\n`)
+      rl.write(`${value} is a shell builtin\n`)
       continue;
     }
-    else if (cmd[0] === 'echo') {
-      cmd.slice(1).forEach(e => rl.write(`${e} `));
+    else if (cmd.name === 'echo') {
+      cmd.args.forEach(e => rl.write(`${e} `));
       rl.write('\n');
       continue;
     }
-    else if (cmd[0] === 'exit') {
-      let num = Number.parseInt(cmd[1]);
+    else if (cmd.name === 'exit') {
+      const { value } = cmd[Symbol.iterator]().next();
+      
+      let num = Number.parseInt(value);
       if (!isNaN(num)) {
         exit(num);
       }
