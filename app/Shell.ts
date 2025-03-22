@@ -4,6 +4,10 @@ import assert from "assert";
 import { Command } from "./Command";
 import path from "path";
 import { stat } from "fs/promises";
+import { exec as ExecCallback } from "child_process";
+import { promisify } from "util";
+
+const exec = promisify(ExecCallback);
 
 export class Shell {
   static readonly builtin_cmds = ['echo', 'exit', 'type'];
@@ -27,6 +31,34 @@ export class Shell {
   appendHistory(cmd: string) {
     this._history += cmd;
   }
+
+  async isExternal(cmd: string): Promise<{ found: boolean, path: string }> {
+    const paths = this._path.split(path.delimiter);
+    for (let pt of paths) {
+      let ztat;
+      try {
+        ztat = await stat(pt + '/' + cmd);
+      } catch (err) {
+        continue;
+      }
+      if (ztat.isFile()) return { found: true, path: pt + '/' + cmd };
+    }
+    
+    return { found: false, path: ''};
+  }
+
+  async runExternalCmd(cmd: string) {
+    try {
+      const { stdout, stderr } = await exec(cmd);
+      console.log(stdout);
+
+      if (stderr) {
+        console.error(stderr);
+      }
+    } catch (error) {
+      console.error(`Exec error: ${error}`);
+    }
+  }
   
   async run() {
     // shell loop
@@ -43,10 +75,6 @@ export class Shell {
         assert(false, "Must provide at least one command");
       }
 
-      if (!this.isBuiltin(cmd.name)) {
-        this.rl.write(`${answer}: command not found\n`);
-        continue;
-      }
       else if (cmd.name === 'type') {
         if (cmd.name.length < 2) {
           assert(false, 'Not implemented yet');
@@ -77,10 +105,12 @@ export class Shell {
 
 
         if (!found) this.rl.write(`${value}: not found\n`);
+        continue;
       }
       else if (cmd.name === 'echo') {
         cmd.args.forEach(e => this.rl.write(`${e} `));
         this.rl.write('\n');
+        continue;
       }
       else if (cmd.name === 'exit') {
         const { value } = cmd[Symbol.iterator]().next();
@@ -90,6 +120,15 @@ export class Shell {
           exit(num);
         }
       }
+
+      const external = await this.isExternal(cmd.name);
+
+      if (external.found) {
+        await this.runExternalCmd(`"${external.path}" ${cmd.args.join(' ')}`);
+        continue;
+      }
+
+      this.rl.write(`${answer}: command not found\n`);
     }
   }
 }
