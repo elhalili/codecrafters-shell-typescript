@@ -32,7 +32,7 @@ export class Shell {
     this._history += cmd;
   }
 
-  async isExternal(cmd: string): Promise<{ found: boolean, path: string }> {
+  async isExternal(cmd: string): Promise<boolean> {
     const paths = this._path.split(path.delimiter);
     for (let pt of paths) {
       let ztat;
@@ -41,10 +41,10 @@ export class Shell {
       } catch (err) {
         continue;
       }
-      if (ztat.isFile()) return { found: true, path: pt + '/' + cmd };
+      if (ztat.isFile()) return true;
     }
     
-    return { found: false, path: ''};
+    return false;
   }
 
   async runExternalCmd(cmd: string) {
@@ -121,10 +121,10 @@ export class Shell {
         }
       }
 
-      const external = await this.isExternal(cmd.name);
+      const isExternal = await this.isExternal(cmd.name);
 
-      if (external.found) {
-        await this.runExternalCmd(`"${external.path}" ${cmd.args.join(' ')}`);
+      if (isExternal) {
+        await this.runExternalCmd(`"${cmd.name}" ${cmd.args.join(' ')}`);
         continue;
       }
 
