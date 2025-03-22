@@ -50,7 +50,7 @@ export class Shell {
   async runExternalCmd(cmd: string) {
     try {
       const { stdout, stderr } = await exec(cmd);
-      console.log(stdout);
+      this.rl.write(stdout);
 
       if (stderr) {
         console.error(stderr);
