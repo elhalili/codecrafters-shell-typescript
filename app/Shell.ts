@@ -120,7 +120,7 @@ export class Shell {
           exit(num);
         }
       } else if (cmd.name === 'pwd') {
-        this.rl.write(__dirname + '\n');
+        this.rl.write(process.cwd() + '\n');
         continue;
       }
 
