@@ -10,7 +10,7 @@ import { promisify } from "util";
 const exec = promisify(ExecCallback);
 
 export class Shell {
-  static readonly builtin_cmds = ['echo', 'exit', 'type'];
+  static readonly builtin_cmds = ['echo', 'exit', 'type', 'pwd'];
   private _history;
   private rl;
   private _path;
@@ -119,6 +119,9 @@ export class Shell {
         if (!isNaN(num)) {
           exit(num);
         }
+      } else if (cmd.name === 'pwd') {
+        this.rl.write(__dirname + '\n');
+        continue;
       }
 
       const isExternal = await this.isExternal(cmd.name);
