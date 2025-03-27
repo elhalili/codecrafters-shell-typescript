@@ -14,10 +14,12 @@ export class Shell {
   private _history;
   private rl;
   private _path;
+  private _home;
 
   constructor() {
     this._history = '';
     this._path = env.PATH || '';
+    this._home = env.HOME || '';
     this.rl = createInterface({
       input: process.stdin,
       output: process.stdout,
@@ -127,12 +129,17 @@ export class Shell {
           console.error('elhash: cd: to many arguments');
           continue;
         } else if (cmd.args.length === 0) {
-          // do nothing for now
+          try {
+            chdir(this._home);
+          } catch (error) {
+            console.error('elhash: cd: Unexpected Error');
+          }
           continue;
         }
         
         try {
-          chdir(cmd.args[0]);
+          const dirc = (cmd.args[0] === '~')? this._home: cmd.args[0]; 
+          chdir(dirc);
         } catch (error) {
           console.error(`cd: ${cmd.args[0]}: No such file or directory`); 
         }
