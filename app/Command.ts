@@ -1,6 +1,5 @@
 export class Command {
   private _name: string;
-  private _path: string;
   private _args: string[];
 
   public constructor(line: string) {
@@ -12,7 +11,7 @@ export class Command {
   get name(): string {
     return this._name;
   }
-  
+
   get args(): string[] {
     return this._args;
   }

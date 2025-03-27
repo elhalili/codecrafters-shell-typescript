@@ -1,4 +1,4 @@
-import { env, exit  } from "process";
+import { chdir, env, exit, cwd  } from "process";
 import { createInterface } from "readline/promises";
 import assert from "assert";
 import { Command } from "./Command";
@@ -10,7 +10,7 @@ import { promisify } from "util";
 const exec = promisify(ExecCallback);
 
 export class Shell {
-  static readonly builtin_cmds = ['echo', 'exit', 'type', 'pwd'];
+  static readonly builtin_cmds = ['echo', 'exit', 'type', 'pwd', 'cd'];
   private _history;
   private rl;
   private _path;
@@ -120,7 +120,23 @@ export class Shell {
           exit(num);
         }
       } else if (cmd.name === 'pwd') {
-        this.rl.write(process.cwd() + '\n');
+        this.rl.write(cwd() + '\n');
+        continue;
+      } else if (cmd.name === 'cd') {
+        if (cmd.args.length > 1) {
+          console.error('elhash: cd: to many arguments');
+          continue;
+        } else if (cmd.args.length === 0) {
+          // do nothing for now
+          continue;
+        }
+        
+        try {
+          chdir(cmd.args[0]);
+        } catch (error) {
+          console.error(`cd: ${cmd.args[0]}: No such file or directory`); 
+        }
+
         continue;
       }
 
