@@ -1,11 +1,13 @@
 export class Command {
-  private _name: string;
-  private _args: string[];
+  private _name: string = '';
+  private _args: string[] = [];
 
   public constructor(line: string) {
-    const cmd = line.trim().split(/\s+/);
-    this._name = cmd[0];
-    this._args = cmd.slice(1);
+    const cmd = line.trim().match(/(?:'[^']*'|\S)+/g)?.map(match => match.replace(/^'|'$/g, ''));;
+    if (cmd) {
+      this._name = cmd[0];
+      this._args = cmd.slice(1);
+    }
   }
 
   get name(): string {
